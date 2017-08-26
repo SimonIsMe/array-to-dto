@@ -1,0 +1,20 @@
+{
+  "name": "simonisme/json-to-dto",
+  "version": "1.0.0",
+  "type": "library",
+  "homepage": "https://github.com/SimonIsMe/json-to-dto",
+  "license": "MIT",
+  "require-dev": {
+    "phpunit/phpunit": "6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "JsonToDto\\": [
+        "./src/"
+      ],
+      "tests\\": [
+        "./tests/"
+      ]
+    }
+  }
+}
