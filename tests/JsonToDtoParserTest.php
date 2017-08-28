@@ -2,6 +2,7 @@
 
 use JsonToDto\JsonToDtoParser;
 use JsonToDto\MissingParameterException;
+use JsonToDto\ValidationException;
 use PHPUnit\Framework\TestCase;
 
 class User
@@ -40,6 +41,20 @@ class ObjectWithArray
 	public function __construct(array $array)
 	{
 		$this->array = $array;
+	}
+}
+
+
+class EmailAddress
+{
+	public $emailAddress;
+
+	public function __construct(string $emailAddress)
+	{
+		if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL) === false) {
+			throw new ValidationException();
+		}
+		$this->emailAddress = $emailAddress;
 	}
 }
 
@@ -83,6 +98,32 @@ class JsonToDtoParserTest extends TestCase
 		$this->assertEquals(false, $user->bool);
 		$this->assertEquals(789, $user->int);
 		$this->assertEquals(123.456, $user->float);
+	}
+
+	public function test_parseToObject_for_validatable_object()
+	{
+		$parser = new JsonToDtoParser();
+		$email = $parser->parseToObject(
+			EmailAddress::class,
+			[
+				'emailAddress' => 'address@domain.com'
+			]
+		);
+
+		$this->assertEquals('address@domain.com', $email->emailAddress);
+	}
+
+	public function test_parseToObject_for_validatable_object_when_value_is_incorrect()
+	{
+		$parser = new JsonToDtoParser();
+
+		$this->expectException(ValidationException::class);
+		$parser->parseToObject(
+			EmailAddress::class,
+			[
+				'emailAddress' => 'abc'
+			]
+		);
 	}
 
 	public function test_parseToObject_without_required_parameter()
