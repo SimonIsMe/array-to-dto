@@ -14,6 +14,7 @@ class JsonToDtoParser
 	 * @return object
 	 *
 	 * @throws MissingParameterException
+	 * @throws ValidationException
 	 */
 	public function parseToObject(string $className, array $json)
 	{
@@ -29,6 +30,7 @@ class JsonToDtoParser
 		}
 
 		$variables = [];
+		$errors = [];
 		foreach ($parametersList as $parameter) {
 			if (array_key_exists($parameter['name'], $json) === false) {
 				continue;
@@ -37,11 +39,19 @@ class JsonToDtoParser
 			if ($parameter['type']->isBuiltin()) {
 				$variables[] = $json[$parameter['name']];
 			} else {
-				$variables[] = $this->parseToObject(
-					$parameter['type']->__toString(),
-					$json[$parameter['name']]
-				);
+				try {
+					$variables[] = $this->parseToObject(
+						$parameter['type']->__toString(),
+						$json[$parameter['name']]
+					);
+				} catch (ValidationException $exception) {
+					$errors[$parameter['name']] = $exception->getErrors();
+				}
 			}
+		}
+
+		if (empty($errors) === false) {
+			throw new ValidationException($errors);
 		}
 
 		$reflectionClass = new ReflectionClass($className);

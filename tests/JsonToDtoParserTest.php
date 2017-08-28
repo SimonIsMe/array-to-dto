@@ -162,6 +162,40 @@ class JsonToDtoParserTest extends TestCase
 		$this->assertEquals(987, $email->validateObjectB->positiveNumber);
 	}
 
+	public function test_parseToObject_for_validatable_nested_object_with_incorrect_data()
+	{
+		$parser = new JsonToDtoParser();
+		try {
+			$parser->parseToObject(
+				NestedValidateObject::class,
+				[
+					'validateObjectA' => [
+						'emailAddress' => 'aaa',
+						'positiveNumber' => -1
+					],
+					'validateObjectB' => [
+						'emailAddress' => 'bbb',
+						'positiveNumber' => -2
+					],
+				]
+			);
+		} catch (ValidationException $exception) {
+			$this->assertEquals(
+				[
+					'validateObjectA' => [
+						'positiveNumber' => 'This value should be positive',
+						'emailAddress' => 'Invalid email address',
+					],
+					'validateObjectB' => [
+						'positiveNumber' => 'This value should be positive',
+						'emailAddress' => 'Invalid email address',
+					]
+				],
+				$exception->getErrors()
+			);
+		}
+	}
+
 	public function test_parseToObject_for_validatable_object_when_value_is_incorrect()
 	{
 		$parser = new JsonToDtoParser();

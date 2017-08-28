@@ -5,14 +5,14 @@ namespace JsonToDto;
 class ValidationException extends \Exception
 {
 	/**
-	 * @var string
+	 * @var array
 	 */
 	private $errors;
 
 	/**
-	 * @param string $errors
+	 * @param array $errors
 	 */
-	public function __construct($errors)
+	public function __construct(array $errors)
 	{
 		$this->errors = $errors;
 		parent::__construct();
