@@ -18,10 +18,7 @@ class JsonToDtoParser
 	public function parseToObject(string $className, array $json)
 	{
 		$reflectionMethod = new ReflectionMethod($className, '__construct');
-
-		if ($this->checkParameters($reflectionMethod, array_keys($json)) === false) {
-			throw new MissingParameterException();
-		}
+		$this->checkParameters($reflectionMethod, array_keys($json));
 
 		$parametersList = [];
 		foreach ($reflectionMethod->getParameters() as $parameter) {
@@ -55,19 +52,19 @@ class JsonToDtoParser
 	 * @param ReflectionMethod $reflectionMethod
 	 * @param array $keys
 	 *
-	 * @return bool
+	 * @return void
+	 *
+	 * @throws MissingParameterException
 	 */
 	private function checkParameters(
 		ReflectionMethod $reflectionMethod,
 		array $keys
-	) : bool
+	)
 	{
 		foreach ($reflectionMethod->getParameters() as $parameter) {
 			if ($parameter->isOptional() === false && in_array($parameter->getName(), $keys) === false) {
-				return false;
+				throw new MissingParameterException($parameter->getName());
 			}
 		}
-
-		return true;
 	}
 }

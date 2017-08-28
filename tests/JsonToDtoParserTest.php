@@ -45,16 +45,29 @@ class ObjectWithArray
 }
 
 
-class EmailAddress
+class ValidateObject
 {
 	public $emailAddress;
+	public $positiveNumber;
 
-	public function __construct(string $emailAddress)
+	public function __construct(string $emailAddress, int $positiveNumber)
 	{
-		if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL) === false) {
-			throw new ValidationException();
+		$errors = [];
+
+		if ($positiveNumber <= 0) {
+			$errors['positiveNumber'] = 'This value should be positive';
 		}
+
+		if (filter_var($emailAddress, FILTER_VALIDATE_EMAIL) === false) {
+			$errors['emailAddress'] = 'Invalid email address';
+		}
+
+		if (empty($errors) == false) {
+			throw new ValidationException($errors);
+		}
+
 		$this->emailAddress = $emailAddress;
+		$this->positiveNumber = $positiveNumber;
 	}
 }
 
@@ -104,9 +117,10 @@ class JsonToDtoParserTest extends TestCase
 	{
 		$parser = new JsonToDtoParser();
 		$email = $parser->parseToObject(
-			EmailAddress::class,
+			ValidateObject::class,
 			[
-				'emailAddress' => 'address@domain.com'
+				'emailAddress' => 'address@domain.com',
+				'positiveNumber' => 123
 			]
 		);
 
@@ -117,13 +131,21 @@ class JsonToDtoParserTest extends TestCase
 	{
 		$parser = new JsonToDtoParser();
 
-		$this->expectException(ValidationException::class);
-		$parser->parseToObject(
-			EmailAddress::class,
-			[
-				'emailAddress' => 'abc'
-			]
-		);
+		try {
+			$parser->parseToObject(
+				ValidateObject::class,
+				[
+					'emailAddress' => 'abc',
+					'positiveNumber' => -123
+				]
+			);
+			$this->assertTrue(false);
+		} catch (ValidationException $exception) {
+			$this->assertEquals([
+				'emailAddress' => 'Invalid email address',
+				'positiveNumber' => 'This value should be positive'
+			], $exception->getErrors());
+		}
 	}
 
 	public function test_parseToObject_without_required_parameter()
