@@ -71,6 +71,18 @@ class ValidateObject
 	}
 }
 
+class NestedValidateObject
+{
+	public $validateObjectA;
+	public $validateObjectB;
+
+	public function __construct(ValidateObject $validateObjectA, ValidateObject $validateObjectB)
+	{
+		$this->validateObjectA = $validateObjectA;
+		$this->validateObjectB = $validateObjectB;
+	}
+}
+
 class JsonToDtoParserTest extends TestCase
 {
 	public function test_parseToObject()
@@ -125,6 +137,29 @@ class JsonToDtoParserTest extends TestCase
 		);
 
 		$this->assertEquals('address@domain.com', $email->emailAddress);
+	}
+
+	public function test_parseToObject_for_validatable_nested_object()
+	{
+		$parser = new JsonToDtoParser();
+		$email = $parser->parseToObject(
+			NestedValidateObject::class,
+			[
+				'validateObjectA' => [
+					'emailAddress' => 'address@domain.com',
+					'positiveNumber' => 123
+				],
+				'validateObjectB' => [
+					'emailAddress' => 'address_b@domain.com',
+					'positiveNumber' => 987
+				],
+			]
+		);
+
+		$this->assertEquals('address@domain.com', $email->validateObjectA->emailAddress);
+		$this->assertEquals(123, $email->validateObjectA->positiveNumber);
+		$this->assertEquals('address_b@domain.com', $email->validateObjectB->emailAddress);
+		$this->assertEquals(987, $email->validateObjectB->positiveNumber);
 	}
 
 	public function test_parseToObject_for_validatable_object_when_value_is_incorrect()
