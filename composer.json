@@ -1,8 +1,8 @@
 {
-  "name": "simonisme/json-to-dto",
+  "name": "simonisme/array-to-dto",
   "version": "1.0.0",
   "type": "library",
-  "homepage": "https://github.com/SimonIsMe/json-to-dto",
+  "homepage": "https://github.com/SimonIsMe/array-to-dto",
   "license": "MIT",
   "require": {
     "php": ">=7.1.0"
